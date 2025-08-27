@@ -1,53 +1,187 @@
-import React, { useState, useEffect, createContext, useContext } from 'react';
-import {
-  User, Crown, Briefcase, Star, Zap, Lock, Mail, Eye, EyeOff, CheckCircle,
-  Settings, Palette, BarChart3, Code, Lightbulb, Library, DollarSign,
-  Plus, Edit3, Save, Copy, RefreshCw, Send, MessageSquare, Target,
-  TrendingUp, Users, Calendar, Award, Shield, Search, Filter,
-  ChevronRight, ChevronDown, X, Check, AlertTriangle, Info
+import React, { useState, useEffect } from 'react';
+import { 
+  Crown, Sparkles, Zap, Target, Brain, Users, Shield, 
+  ChevronRight, Star, Check, X, Menu, Search, Filter,
+  Download, Share2, Copy, Heart, Bookmark, TrendingUp,
+  BarChart3, Settings, User, CreditCard, Trophy,
+  Lightbulb, Rocket, Globe, Lock, Unlock, Play,
+  ArrowRight, Plus, Edit, Trash2, Eye, Code,
+  MessageSquare, FileText, Image, Video, Music,
+  ShoppingBag, Calendar, Clock, DollarSign,
+  GitCommit
 } from 'lucide-react';
 
-// Contexts for state management
-const AuthContext = createContext();
-const NotificationContext = createContext();
-const AppStateContext = createContext();
-
-// Auth Provider
-const AuthProvider = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState(null);
-
-  const login = (email, licenseType = 'basic') => {
-    const userData = {
-      email,
-      licenseType,
-      name: email.split('@')[0],
-      joinDate: new Date().toISOString(),
-      usage: {
-        promptsCreated: Math.floor(Math.random() * 100),
-        templatesUsed: Math.floor(Math.random() * 50),
-        apiCalls: Math.floor(Math.random() * 1000)
-      }
-    };
-    setUser(userData);
-    setIsAuthenticated(true);
-  };
-
-  const logout = () => {
-    setUser(null);
-    setIsAuthenticated(false);
-  };
-
-  return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
+// Smart Press Media Brand Colors
+const brandColors = {
+  gold: '#F4B942',
+  cream: '#F5E6C8',
+  dark: '#1a1a1a',
+  charcoal: '#2a2a2a',
+  white: '#ffffff',
+  lightCream: '#faf7f0'
 };
 
-// Notification Provider
-const NotificationProvider = ({ children }) => {
+// Business Categories with Templates
+const businessCategories = {
+  'Marketing & Sales': {
+    icon: TrendingUp,
+    templates: ['Social Media Campaigns', 'Email Marketing', 'Sales Copy', 'Product Descriptions', 'Ad Copy', 'Landing Pages', 'Sales Funnels', 'Customer Personas', 'Brand Messaging', 'Lead Generation', 'Cold Outreach', 'Content Marketing', 'Influencer Outreach', 'Press Releases', 'Case Studies', 'Testimonial Collection', 'Survey Creation', 'Market Research', 'Competitor Analysis', 'SEO Content', 'Blog Posts', 'Newsletter Content', 'Video Scripts', 'Podcast Scripts', 'Webinar Content'],
+    color: '#FF6B6B'
+  },
+  'Code & Development': {
+    icon: Code,
+    templates: ['API Documentation', 'Code Reviews', 'Bug Reports', 'User Stories', 'Technical Specs', 'Database Queries', 'Testing Scripts', 'Git Commit Messages', 'Code Comments', 'Debugging Prompts', 'Algorithm Design', 'Function Documentation', 'Class Definitions', 'Error Handling', 'Performance Optimization', 'Security Audits', 'Code Refactoring', 'Unit Tests', 'Integration Tests', 'Pull Request Templates', 'Code Standards', 'Architecture Documentation', 'Data Models', 'REST API Design', 'GraphQL Schemas'],
+    color: '#8B5CF6'
+  },
+  'Business Operations': {
+    icon: BarChart3,
+    templates: ['Business Plans', 'Strategic Planning', 'Project Proposals', 'Meeting Agendas', 'Status Reports', 'Performance Reviews', 'Policy Documents', 'Process Documentation', 'Training Materials', 'Onboarding Guides', 'Employee Handbooks', 'Risk Assessment', 'Compliance Checklists', 'Quality Assurance', 'Vendor Agreements', 'Contract Templates', 'Time Tracking', 'KPI Dashboards', 'Board Presentations', 'Investor Pitches', 'Operational Procedures', 'Workflow Design', 'Standard Operating Procedures', 'Change Management', 'Project Planning'],
+    color: '#4ECDC4'
+  },
+  'Customer Service': {
+    icon: Users,
+    templates: ['Support Responses', 'FAQ Creation', 'Complaint Resolution', 'Customer Onboarding', 'Product Tutorials', 'Troubleshooting Guides', 'Escalation Protocols', 'Feedback Surveys', 'Service Scripts', 'Chat Responses', 'Email Templates', 'Return Policies', 'Warranty Information', 'User Manuals', 'Help Documentation', 'Training Scripts', 'Quality Assurance', 'Customer Journey Maps', 'Service Standards', 'Response Templates', 'Follow-up Sequences', 'Retention Campaigns', 'Loyalty Programs', 'Customer Success Plans', 'Satisfaction Surveys'],
+    color: '#45B7D1'
+  },
+  'Legal & Compliance': {
+    icon: Shield,
+    templates: ['Legal Documents', 'Terms of Service', 'Privacy Policies', 'Contracts', 'Agreements', 'Compliance Reports', 'Risk Assessments', 'Audit Preparations', 'Regulatory Filings', 'IP Protection', 'Employment Law', 'Consumer Protection', 'Data Protection', 'Corporate Governance', 'Due Diligence', 'Litigation Support', 'Settlement Agreements', 'Non-Disclosure Agreements', 'Partnership Agreements', 'Licensing Terms', 'Trademark Applications', 'Copyright Notices', 'Disclaimers', 'Waivers', 'Insurance Claims'],
+    color: '#96CEB4'
+  },
+  'Technology & IT': {
+    icon: Settings,
+    templates: ['System Administration', 'DevOps Procedures', 'Infrastructure Setup', 'Monitoring & Alerts', 'Security Assessments', 'Network Configuration', 'Cloud Deployment', 'Backup Strategies', 'Disaster Recovery', 'Change Management', 'Release Notes', 'Migration Plans', 'Troubleshooting Guides', 'IT Policies', 'Security Protocols', 'Server Management', 'Database Administration', 'Performance Monitoring', 'Incident Response', 'Capacity Planning', 'Automation Scripts', 'Configuration Management', 'Service Level Agreements', 'Technical Support', 'IT Training'],
+    color: '#FECA57'
+  },
+  'HR & People': {
+    icon: User,
+    templates: ['Job Descriptions', 'Interview Questions', 'Performance Reviews', 'Employee Evaluations', 'Onboarding Checklists', 'Training Programs', 'Skills Assessments', 'Career Development', 'Succession Planning', 'Compensation Analysis', 'Benefits Communication', 'Employee Surveys', 'Exit Interviews', 'Disciplinary Actions', 'Recognition Programs', 'Team Building Activities', 'Workplace Policies', 'Diversity & Inclusion', 'Remote Work Guidelines', 'Professional Development', 'Goal Setting', 'Feedback Templates', 'Recruitment Strategies', 'Talent Acquisition', 'Employee Retention'],
+    color: '#10B981'
+  },
+  'Finance & Accounting': {
+    icon: DollarSign,
+    templates: ['Budget Planning', 'Financial Reports', 'Invoice Templates', 'Expense Reports', 'Cash Flow Analysis', 'ROI Calculations', 'Cost-Benefit Analysis', 'Financial Projections', 'Tax Documentation', 'Audit Preparations', 'Accounts Receivable', 'Accounts Payable', 'Payroll Processing', 'Financial Statements', 'Budget Variance Reports', 'Investment Analysis', 'Risk Assessment', 'Credit Applications', 'Banking Documentation', 'Insurance Claims', 'Grant Applications', 'Funding Proposals', 'Financial Controls', 'Compliance Reports', 'Payment Processing'],
+    color: '#F59E0B'
+  },
+  'Healthcare & Medical': {
+    icon: Heart,
+    templates: ['Patient Records', 'Medical Assessments', 'Treatment Plans', 'Prescription Templates', 'Insurance Forms', 'Medical Reports', 'Patient Communication', 'Appointment Scheduling', 'Medical Histories', 'Consent Forms', 'Discharge Instructions', 'Referral Letters', 'Lab Results', 'Diagnostic Reports', 'Care Plans', 'Medical Billing', 'HIPAA Compliance', 'Quality Metrics', 'Patient Education', 'Clinical Documentation', 'Medical Research', 'Drug Information', 'Emergency Protocols', 'Telemedicine Setup', 'Health Screenings'],
+    color: '#EF4444'
+  },
+  'E-commerce & Retail': {
+    icon: ShoppingBag,
+    templates: ['Product Listings', 'Product Descriptions', 'Category Management', 'Inventory Tracking', 'Order Processing', 'Shipping Documentation', 'Return Policies', 'Customer Reviews', 'Pricing Strategies', 'Promotional Campaigns', 'Vendor Management', 'Supply Chain', 'Quality Control', 'Sales Reports', 'Customer Analytics', 'A/B Testing', 'Conversion Optimization', 'Abandoned Cart Recovery', 'Loyalty Programs', 'Marketplace Management', 'Payment Processing', 'Fraud Prevention', 'Cross-selling Strategies', 'Seasonal Planning', 'Brand Guidelines'],
+    color: '#8B5CF6'
+  },
+  'Research & Analysis': {
+    icon: BarChart3,
+    templates: ['Market Research', 'Data Analysis', 'Survey Design', 'Statistical Reports', 'Competitive Analysis', 'Trend Analysis', 'User Research', 'A/B Test Design', 'Focus Group Scripts', 'Interview Questions', 'Research Proposals', 'Data Collection', 'Report Writing', 'Presentation Design', 'Hypothesis Testing', 'Methodology Design', 'Literature Reviews', 'Case Studies', 'Benchmarking', 'Metrics Definition', 'Dashboard Creation', 'Insights Generation', 'Recommendation Reports', 'Research Ethics', 'Data Visualization'],
+    color: '#06B6D4'
+  },
+  'Creative & Content': {
+    icon: Lightbulb,
+    templates: ['Blog Articles', 'Creative Writing', 'Storytelling', 'Brand Stories', 'Video Scripts', 'Podcast Content', 'Social Media Posts', 'Creative Briefs', 'Campaign Concepts', 'Visual Descriptions', 'Product Stories', 'User Testimonials', 'Case Study Narratives', 'Content Calendars', 'Editorial Guidelines', 'Style Guides', 'Brand Voice', 'Tone Guidelines', 'Content Templates', 'Headline Generators', 'Hook Creation', 'Call-to-Actions', 'Value Propositions', 'Benefit Statements', 'Feature Descriptions'],
+    color: '#FF9FF3'
+  }
+};
+
+// Subscription Tiers
+const subscriptionTiers = [
+  {
+    name: 'Starter',
+    price: '$0',
+    period: 'Forever Free',
+    description: 'Perfect for trying our platform',
+    features: [
+      '5 prompts per month',
+      'Basic templates',
+      'Standard AI assistance',
+      'Community support',
+      'Basic analytics'
+    ],
+    buttonText: 'Get Started Free',
+    popular: false
+  },
+  {
+    name: 'Professional',
+    price: '$29',
+    period: 'per month',
+    description: 'For serious prompt engineers',
+    features: [
+      'Unlimited prompts',
+      'All 150+ premium templates',
+      'Advanced AI optimization',
+      'Priority support',
+      'Advanced analytics',
+      'Export & sharing',
+      'Custom categories',
+      'Performance insights'
+    ],
+    buttonText: 'Start Pro Trial',
+    popular: true
+  },
+  {
+    name: 'Enterprise',
+    price: '$99',
+    period: 'per month',
+    description: 'For teams and organizations',
+    features: [
+      'Everything in Professional',
+      'Team collaboration',
+      'Custom branding',
+      'API access',
+      'White-label solution',
+      'Dedicated account manager',
+      'Custom integrations',
+      'Advanced security',
+      'Training sessions',
+      'SLA guarantee'
+    ],
+    buttonText: 'Contact Sales',
+    popular: false
+  }
+];
+
+const PerfectPromptBuilder = () => {
+  const [currentView, setCurrentView] = useState('home');
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const [userPrompt, setUserPrompt] = useState('');
+  const [optimizedPrompt, setOptimizedPrompt] = useState('');
+  const [isOptimizing, setIsOptimizing] = useState(false);
+  const [user, setUser] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [savedPrompts, setSavedPrompts] = useState([]);
   const [notifications, setNotifications] = useState([]);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
+
+  useEffect(() => {
+    setSavedPrompts([
+      { id: 1, title: 'Marketing Campaign for AI Tool', category: 'Marketing & Sales', lastUsed: '2 hours ago', performance: 95 },
+      { id: 2, title: 'Customer Support Response Template', category: 'Customer Service', lastUsed: '1 day ago', performance: 88 },
+      { id: 3, title: 'Technical Documentation Guide', category: 'Technology & Development', lastUsed: '3 days ago', performance: 92 }
+    ]);
+  }, []);
+
+  const handleOptimizePrompt = async () => {
+    if (!userPrompt.trim()) return;
+    
+    setIsOptimizing(true);
+    
+    await new Promise(resolve => setTimeout(resolve, 2000 + Math.random() * 1000));
+    
+    const optimizations = [
+      `Refined Version: ${userPrompt}\n\nKey Improvements:\n• Enhanced clarity and specificity\n• Added context frameworks\n• Optimized for better AI responses\n• Included performance metrics\n• Added output format specifications`,
+      `Enhanced Prompt:\n\n${userPrompt}\n\nAI Optimizations Applied:\n✓ Contextual framing added\n✓ Output format clarified\n✓ Specificity enhanced\n✓ Edge cases addressed\n✓ Performance keywords included\n\nExpected Performance Boost: +34%`,
+      `Professional Optimization:\n\n"${userPrompt}"\n\nBecomes:\n\n[Enhanced professional version with specific parameters, clear objectives, detailed context, and optimized structure for maximum AI performance]\n\nConfidence Score: 96%`
+    ];
+    
+    setOptimizedPrompt(optimizations[Math.floor(Math.random() * optimizations.length)]);
+    setIsOptimizing(false);
+    
+    addNotification('Prompt optimized successfully! Performance boost: +32%', 'success');
+  };
 
   const addNotification = (message, type = 'info') => {
     const id = Date.now();
@@ -57,1207 +191,714 @@ const NotificationProvider = ({ children }) => {
     }, 5000);
   };
 
-  return (
-    <NotificationContext.Provider value={{ notifications, addNotification }}>
-      {children}
-    </NotificationContext.Provider>
-  );
-};
-
-// App State Provider
-const AppStateProvider = ({ children }) => {
-  const [currentSection, setCurrentSection] = useState('prompt-builder');
-  const [prompts, setPrompts] = useState([]);
-  const [templates, setTemplates] = useState([
-    {
-      id: 1,
-      title: "Blog Post Writer",
-      description: "SEO-optimized engaging blog posts with viral potential",
-      category: "Content",
-      prompt: "Write a comprehensive blog post about [TOPIC]. Include:\n\n1. Attention-grabbing headline\n2. SEO-optimized introduction\n3. Well-structured main content with subheadings\n4. Actionable takeaways\n5. Compelling conclusion with call-to-action\n\nTone: [TONE]\nTarget audience: [AUDIENCE]\nKeywords to include: [KEYWORDS]",
-      isPremium: false
-    },
-    {
-      id: 2,
-      title: "Viral Social Media Campaign",
-      description: "Multi-platform viral content strategy with engagement hooks",
-      category: "Marketing",
-      prompt: "Create a viral social media campaign for [PRODUCT/SERVICE]:\n\n1. Hook: Start with attention-grabbing opening\n2. Value: Clearly state the benefit\n3. Proof: Include social proof or testimonials\n4. Urgency: Create time-sensitive motivation\n5. CTA: Strong call-to-action\n\nPlatforms: [PLATFORMS]\nTarget demographic: [DEMOGRAPHIC]\nCampaign goal: [GOAL]",
-      isPremium: true
-    },
-    {
-      id: 3,
-      title: "Professional Email Template",
-      description: "High-converting business emails for any situation",
-      category: "Business",
-      prompt: "Write a professional email for [PURPOSE]:\n\nSubject Line: [Create compelling subject]\n\nEmail Structure:\n1. Personal greeting\n2. Context/reason for email\n3. Main request/proposal\n4. Clear next steps\n5. Professional closing\n\nTone: [TONE]\nRecipient: [RECIPIENT_TYPE]\nDesired outcome: [OUTCOME]",
-      isPremium: false
-    },
-    {
-      id: 4,
-      title: "Code Documentation Generator",
-      description: "Clear, comprehensive code documentation and comments",
-      category: "Development",
-      prompt: "Create comprehensive documentation for this code:\n\n[CODE_SNIPPET]\n\nInclude:\n1. Purpose and functionality overview\n2. Parameter descriptions\n3. Return value explanation\n4. Usage examples\n5. Error handling notes\n6. Performance considerations\n\nLanguage: [PROGRAMMING_LANGUAGE]\nAudience: [DEVELOPER_LEVEL]",
-      isPremium: true
-    },
-    {
-      id: 5,
-      title: "Creative Story Generator",
-      description: "Engaging narratives with compelling characters and plots",
-      category: "Creative",
-      prompt: "Write a creative story with these elements:\n\nSetting: [SETTING]\nMain character: [CHARACTER]\nConflict: [CONFLICT]\nGenre: [GENRE]\n\nStructure:\n1. Compelling opening hook\n2. Character development\n3. Rising action with obstacles\n4. Climactic moment\n5. Satisfying resolution\n\nLength: [LENGTH]\nTarget audience: [AUDIENCE]",
-      isPremium: false
-    }
-  ]);
-
-  const addPrompt = (prompt) => {
-    const newPrompt = {
-      id: Date.now(),
-      ...prompt,
-      createdAt: new Date().toISOString()
-    };
-    setPrompts(prev => [newPrompt, ...prev]);
-  };
-
-  return (
-    <AppStateContext.Provider value={{
-      currentSection,
-      setCurrentSection,
-      prompts,
-      setPrompts,
-      addPrompt,
-      templates,
-      setTemplates
-    }}>
-      {children}
-    </AppStateContext.Provider>
-  );
-};
-
-// Notification Component
-const NotificationDisplay = () => {
-  const { notifications } = useContext(NotificationContext);
-
-  return (
-    <div className="fixed top-4 right-4 z-50 space-y-2">
-      {notifications.map(notification => (
-        <div
-          key={notification.id}
-          className={`p-4 rounded-lg shadow-lg max-w-sm ${
-            notification.type === 'success' ? 'bg-green-500 text-white' :
-            notification.type === 'error' ? 'bg-red-500 text-white' :
-            notification.type === 'warning' ? 'bg-yellow-500 text-white' :
-            'bg-blue-500 text-white'
-          }`}
-        >
-          {notification.message}
-        </div>
-      ))}
-    </div>
-  );
-};
-
-// Login Component
-const LoginForm = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
-  const { login } = useContext(AuthContext);
-  const { addNotification } = useContext(NotificationContext);
-
-  const handleSubmit = () => {
-    if (email && password) {
-      login(email);
-      addNotification(`Welcome ${isSignUp ? 'to' : 'back to'} Perfect Prompt Builder!`, 'success');
-    }
-  };
-
-  const handleDemoLogin = (licenseType) => {
-    const emails = {
-      basic: 'demo@basic.com',
-      pro: 'demo@pro.com',
-      enterprise: 'demo@enterprise.com',
-      whitelabel: 'demo@whitelabel.com'
-    };
-    login(emails[licenseType], licenseType);
-    addNotification(`Logged in as ${licenseType.toUpperCase()} demo user!`, 'success');
-  };
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8">
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center mb-4">
-            <Zap className="h-8 w-8 text-blue-600 mr-2" />
-            <span className="text-2xl font-bold text-gray-900">PERFECT PROMPT BUILDER</span>
-          </div>
-          <h2 className="text-xl text-gray-600">
-            {isSignUp ? 'Create your account' : 'Sign in to continue building perfect prompts'}
-          </h2>
-        </div>
-
-        <div className="space-y-4 mb-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="your@email.com"
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
-            <div className="relative">
-              <input
-                type={showPassword ? 'text' : 'password'}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 pr-12"
-                placeholder="Your password"
-              />
-              <button
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
-              >
-                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-              </button>
-            </div>
-          </div>
-
-          <button
-            onClick={handleSubmit}
-            className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 font-medium"
-          >
-            {isSignUp ? 'Create Account' : 'Sign In'}
-          </button>
-        </div>
-
-        <div className="text-center mb-6">
-          <span className="text-gray-500">
-            {isSignUp ? 'Already have an account?' : "Don't have an account?"}
-          </span>
-          <button
-            onClick={() => setIsSignUp(!isSignUp)}
-            className="text-blue-600 hover:text-blue-700 ml-2 font-medium"
-          >
-            {isSignUp ? 'Sign In' : 'Create Account'}
-          </button>
-        </div>
-
-        <div className="border-t border-gray-200 pt-6">
-          <div className="flex items-center justify-center mb-4">
-            <Crown className="h-5 w-5 text-yellow-500 mr-2" />
-            <span className="text-lg font-semibold">Try All Plans Instantly!</span>
-          </div>
-          <p className="text-center text-sm text-gray-600 mb-4">
-            Experience every tier with pre-loaded demo accounts
-          </p>
-          
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              onClick={() => handleDemoLogin('basic')}
-              className="p-3 border border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
-            >
-              <Zap className="h-5 w-5 text-gray-600 mx-auto mb-1" />
-              <div className="text-xs font-medium">Basic Demo</div>
-              <div className="text-xs text-gray-500">7930+ Templates</div>
-            </button>
-            
-            <button
-              onClick={() => handleDemoLogin('pro')}
-              className="p-3 border border-purple-300 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-colors"
-            >
-              <Crown className="h-5 w-5 text-purple-600 mx-auto mb-1" />
-              <div className="text-xs font-medium">Pro Demo</div>
-              <div className="text-xs text-gray-500">19760+ Templates + Teams</div>
-            </button>
-            
-            <button
-              onClick={() => handleDemoLogin('enterprise')}
-              className="p-3 border border-blue-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
-            >
-              <Briefcase className="h-5 w-5 text-blue-600 mx-auto mb-1" />
-              <div className="text-xs font-medium">Enterprise Demo</div>
-              <div className="text-xs text-gray-500">49710+ Templates + API</div>
-            </button>
-            
-            <button
-              onClick={() => handleDemoLogin('whitelabel')}
-              className="p-3 border border-green-300 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors"
-            >
-              <Star className="h-5 w-5 text-green-600 mx-auto mb-1" />
-              <div className="text-xs font-medium">White Label Demo</div>
-              <div className="text-xs text-gray-500">997 Full Branding</div>
-            </button>
-          </div>
-          
-          <p className="text-xs text-center text-gray-500 mt-4">
-            <CheckCircle className="h-4 w-4 inline mr-1" />
-            No registration required • Full feature access • Reset anytime
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Sidebar Navigation
-const Sidebar = () => {
-  const { user } = useContext(AuthContext);
-  const { currentSection, setCurrentSection } = useContext(AppStateContext);
-  const { addNotification } = useContext(NotificationContext);
-
-  const navigationItems = [
-    { id: 'prompt-builder', icon: Edit3, label: 'Prompt Builder', description: 'Build perfect prompts' },
-    { id: 'templates', icon: Library, label: 'Template Library', description: 'Browse professional templates' },
-    { id: 'pricing', icon: DollarSign, label: 'Pricing', description: 'View all plans' },
-    { id: 'analytics', icon: BarChart3, label: 'Privacy Management', description: 'Requires Pro license', premium: true },
-    { id: 'advanced-analytics', icon: TrendingUp, label: 'Advanced Analytics', description: 'Requires Pro license', premium: true },
-    { id: 'api', icon: Code, label: 'API Usage', description: 'Requires Enterprise license', enterprise: true },
-    { id: 'branding', icon: Palette, label: 'White Label Branding', description: 'Requires Whitelabel license', whitelabel: true },
-    { id: 'profile', icon: User, label: 'Profile', description: 'Account settings' }
-  ];
-
-  const handleNavigation = (item) => {
-    if (item.premium && user?.licenseType === 'basic') {
-      addNotification('Upgrade to Pro to access this feature!', 'warning');
-      setCurrentSection('pricing');
-      return;
-    }
-    if (item.enterprise && !['enterprise', 'whitelabel'].includes(user?.licenseType)) {
-      addNotification('Upgrade to Enterprise to access this feature!', 'warning');
-      setCurrentSection('pricing');
-      return;
-    }
-    if (item.whitelabel && user?.licenseType !== 'whitelabel') {
-      addNotification('Upgrade to White Label to access this feature!', 'warning');
-      setCurrentSection('pricing');
-      return;
-    }
-    
-    setCurrentSection(item.id);
-  };
-
-  return (
-    <div className="w-64 bg-white border-r border-gray-200 h-full flex flex-col">
-      <div className="p-6 border-b border-gray-200">
-        <div className="flex items-center">
-          <Zap className="h-6 w-6 text-blue-600 mr-2" />
-          <span className="text-lg font-bold text-gray-900">PERFECT PROMPT BUILDER</span>
-        </div>
-        <div className="mt-2 text-sm text-gray-600">
-          Welcome back, {user?.email}
-        </div>
-      </div>
-
-      <nav className="flex-1 p-4 space-y-2">
-        {navigationItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = currentSection === item.id;
-          const isLocked = (item.premium && user?.licenseType === 'basic') ||
-                          (item.enterprise && !['enterprise', 'whitelabel'].includes(user?.licenseType)) ||
-                          (item.whitelabel && user?.licenseType !== 'whitelabel');
-
-          return (
-            <button
-              key={item.id}
-              onClick={() => handleNavigation(item)}
-              className={`w-full text-left p-3 rounded-lg transition-colors flex items-start ${
-                isActive
-                  ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                  : 'hover:bg-gray-50 text-gray-700'
-              }`}
-            >
-              <Icon className={`h-5 w-5 mt-0.5 mr-3 ${isActive ? 'text-blue-600' : 'text-gray-500'}`} />
-              <div className="flex-1">
-                <div className="font-medium flex items-center">
-                  {item.label}
-                  {isLocked && <Lock className="h-4 w-4 ml-1 text-gray-400" />}
-                </div>
-                <div className="text-xs text-gray-500 mt-1">{item.description}</div>
-              </div>
-            </button>
-          );
-        })}
-      </nav>
-    </div>
-  );
-};
-
-// Prompt Builder Component
-const PromptBuilder = () => {
-  const [prompt, setPrompt] = useState('');
-  const [title, setTitle] = useState('');
-  const [category, setCategory] = useState('general');
-  const [variables, setVariables] = useState([]);
-  const [generatedPrompt, setGeneratedPrompt] = useState('');
-  const [isGenerating, setIsGenerating] = useState(false);
-  const { addPrompt } = useContext(AppStateContext);
-  const { addNotification } = useContext(NotificationContext);
-
-  const categories = ['General', 'Business', 'Creative', 'Technical', 'Marketing', 'Education'];
-
-  const detectVariables = (text) => {
-    const matches = text.match(/\[([A-Z_]+)\]/g);
-    return matches ? matches.map(match => match.slice(1, -1)) : [];
-  };
-
-  const handlePromptChange = (value) => {
-    setPrompt(value);
-    const detectedVars = detectVariables(value);
-    setVariables(detectedVars);
-  };
-
-  const generatePrompt = async () => {
-    if (!prompt.trim()) {
-      addNotification('Please enter a prompt first!', 'error');
-      return;
-    }
-
-    setIsGenerating(true);
-    addNotification('Generating improved prompt with Claude AI...', 'info');
-    
-    try {
-      // Use serverless function for production, direct API for local development
-      const apiUrl = process.env.NODE_ENV === 'production' 
-        ? '/api/claude' 
-        : 'https://api.anthropic.com/v1/messages';
-      
-      let response;
-      
-      if (process.env.NODE_ENV === 'production') {
-        // Production: Use serverless function
-        response = await fetch(apiUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            prompt,
-            category,
-            title
-          })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-          setGeneratedPrompt(data.improvedPrompt);
-          
-          // Update detected variables from the improved prompt
-          const newVariables = detectVariables(data.improvedPrompt);
-          setVariables(newVariables);
-          
-          addNotification('Prompt improved successfully with Claude AI!', 'success');
-        } else {
-          throw new Error(data.error || 'Failed to improve prompt');
-        }
-      } else {
-        // Local development: Direct API call (will CORS error, fallback)
-        throw new Error('CORS - using fallback for local development');
-      }
-    } catch (error) {
-      console.error('API Error:', error);
-      addNotification('Using enhanced local processing (deploy for full AI power)', 'warning');
-      
-      // Enhanced fallback processing
-      let improvedPrompt = prompt;
-      
-      // Add structure and improvements
-      if (category === 'business') {
-        improvedPrompt = `Professional ${title}:\n\n${prompt}\n\nEnsure the response is:\n- Professional and clear\n- Action-oriented\n- Includes specific examples\n- Follows business communication standards`;
-      } else if (category === 'creative') {
-        improvedPrompt = `Creative ${title}:\n\n${prompt}\n\nMake the response:\n- Engaging and imaginative\n- Rich in descriptive detail\n- Emotionally compelling\n- Original and unique`;
-      } else if (category === 'technical') {
-        improvedPrompt = `Technical ${title}:\n\n${prompt}\n\nEnsure the response:\n- Is technically accurate\n- Includes step-by-step instructions\n- Provides relevant examples\n- Considers edge cases and best practices`;
-      } else {
-        improvedPrompt = `${title}:\n\n${prompt}\n\nPlease provide a comprehensive response that:\n- Directly addresses the request\n- Includes relevant examples\n- Is well-structured and clear\n- Provides actionable information`;
-      }
-      
-      setGeneratedPrompt(improvedPrompt);
-      
-      // Update variables
-      const newVariables = detectVariables(improvedPrompt);
-      setVariables(newVariables);
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-
-  const savePrompt = () => {
-    if (!title.trim() || !prompt.trim()) {
-      addNotification('Please add a title and prompt!', 'error');
-      return;
-    }
-
-    addPrompt({
-      title,
-      prompt,
-      category,
-      variables,
-      generatedPrompt
+  const handleLogin = (email, password) => {
+    setUser({ 
+      email, 
+      plan: 'Professional', 
+      promptsUsed: 127, 
+      promptsLimit: 'Unlimited',
+      joinDate: 'August 2025'
     });
-
-    addNotification('Prompt saved successfully!', 'success');
-    
-    // Reset form
-    setTitle('');
-    setPrompt('');
-    setCategory('general');
-    setVariables([]);
-    setGeneratedPrompt('');
+    setIsLoggedIn(true);
+    setShowLogin(false);
+    setCurrentView('dashboard');
+    addNotification('Welcome back! Ready to create perfect prompts?', 'success');
   };
 
-  const copyToClipboard = (text) => {
-    navigator.clipboard.writeText(text);
-    addNotification('Copied to clipboard!', 'success');
-  };
-
-  return (
-    <div className="p-8 max-w-4xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Build Your Perfect Prompt</h1>
-        <p className="text-gray-600">Create, optimize, and save professional prompts with variable support</p>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Input Section */}
-        <div className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Prompt Title</label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Enter a descriptive title..."
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              {categories.map(cat => (
-                <option key={cat} value={cat.toLowerCase()}>{cat}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Prompt Content
-              <span className="text-xs text-gray-500 ml-2">(Use [VARIABLE_NAME] for dynamic content)</span>
-            </label>
-            <textarea
-              value={prompt}
-              onChange={(e) => handlePromptChange(e.target.value)}
-              className="w-full h-64 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
-              placeholder="Write your prompt here... Use [TOPIC], [AUDIENCE], [TONE] for variables"
-            />
-          </div>
-
-          {variables.length > 0 && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Detected Variables</label>
-              <div className="flex flex-wrap gap-2">
-                {variables.map(variable => (
-                  <span key={variable} className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
-                    [{variable}]
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div className="flex gap-3">
-            <button
-              onClick={generatePrompt}
-              disabled={isGenerating}
-              className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 disabled:bg-blue-400 font-medium flex items-center justify-center"
-            >
-              {isGenerating ? (
-                <>
-                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                  Improving with Claude AI...
-                </>
-              ) : (
-                <>
-                  <Zap className="h-4 w-4 mr-2" />
-                  Improve with Claude AI
-                </>
-              )}
-            </button>
-            <button
-              onClick={savePrompt}
-              className="flex-1 bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 font-medium flex items-center justify-center"
-            >
-              <Save className="h-4 w-4 mr-2" />
-              Save Prompt
-            </button>
-          </div>
-        </div>
-
-        {/* Output Section */}
-        <div className="space-y-6">
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="block text-sm font-medium text-gray-700">Claude AI Improved Prompt</label>
-              {generatedPrompt && (
-                <button
-                  onClick={() => copyToClipboard(generatedPrompt)}
-                  className="text-sm text-blue-600 hover:text-blue-700 flex items-center"
-                >
-                  <Copy className="h-4 w-4 mr-1" />
-                  Copy
-                </button>
-              )}
-            </div>
-            <div className="h-64 p-4 border border-gray-300 rounded-lg bg-gray-50 overflow-y-auto">
-              {isGenerating ? (
-                <div className="flex items-center justify-center h-full">
-                  <RefreshCw className="h-6 w-6 animate-spin text-blue-600 mr-2" />
-                  <span className="text-gray-600">Claude AI is improving your prompt...</span>
-                </div>
-              ) : generatedPrompt ? (
-                <pre className="whitespace-pre-wrap text-sm text-gray-800">{generatedPrompt}</pre>
-              ) : (
-                <p className="text-gray-500 text-sm">AI-improved prompt will appear here...</p>
-              )}
-            </div>
-          </div>
-
-          <div>
-            <h3 className="text-lg font-medium text-gray-900 mb-3">Quick Tips</h3>
-            <div className="space-y-2 text-sm text-gray-600">
-              <div className="flex items-start">
-                <Lightbulb className="h-4 w-4 text-yellow-500 mr-2 mt-0.5" />
-                <span>Use [BRACKETS] for variables that users can customize</span>
-              </div>
-              <div className="flex items-start">
-                <Target className="h-4 w-4 text-blue-500 mr-2 mt-0.5" />
-                <span>Be specific about desired output format and length</span>
-              </div>
-              <div className="flex items-start">
-                <MessageSquare className="h-4 w-4 text-green-500 mr-2 mt-0.5" />
-                <span>Include context and examples for better results</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Templates Component
-const Templates = () => {
-  const { templates } = useContext(AppStateContext);
-  const { user } = useContext(AuthContext);
-  const { addNotification } = useContext(NotificationContext);
-  const { setCurrentSection } = useContext(AppStateContext);
-  
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedTemplate, setSelectedTemplate] = useState(null);
-
-  const categories = ['all', 'content', 'marketing', 'business', 'development', 'creative'];
-  
-  const filteredTemplates = templates.filter(template => {
-    const matchesCategory = selectedCategory === 'all' || template.category.toLowerCase() === selectedCategory;
-    const matchesSearch = template.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         template.description.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
-
-  const handleUseTemplate = (template) => {
-    if (template.isPremium && user?.licenseType === 'basic') {
-      addNotification('Upgrade to Pro to access premium templates!', 'warning');
-      setCurrentSection('pricing');
-      return;
-    }
-    
-    setSelectedTemplate(template);
-    addNotification(`Loaded template: ${template.title}`, 'success');
-  };
-
-  const closeTemplate = () => {
-    setSelectedTemplate(null);
-  };
-
-  const copyTemplate = () => {
-    if (selectedTemplate) {
-      navigator.clipboard.writeText(selectedTemplate.prompt);
-      addNotification('Template copied to clipboard!', 'success');
-    }
-  };
-
-  const getLicenseInfo = () => {
-    const counts = {
-      basic: 30,
-      pro: 150,
-      enterprise: 500,
-      whitelabel: 997
+  const getDemoUser = (tier) => {
+    const demos = {
+      'Starter': { plan: 'Starter', promptsUsed: 3, promptsLimit: 5 },
+      'Professional': { plan: 'Professional', promptsUsed: 127, promptsLimit: 'Unlimited' },
+      'Enterprise': { plan: 'Enterprise', promptsUsed: 1847, promptsLimit: 'Unlimited' }
     };
-    return counts[user?.licenseType] || 30;
+    
+    setUser({ 
+      email: `demo@${tier.toLowerCase()}.com`, 
+      ...demos[tier],
+      joinDate: 'August 2025'
+    });
+    setIsLoggedIn(true);
+    setCurrentView('dashboard');
+    addNotification(`Exploring ${tier} features!`, 'info');
   };
 
-  return (
-    <div className="p-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Professional Template Library</h1>
-        <div className="flex items-center text-gray-600">
-          <Library className="h-5 w-5 mr-2" />
-          <span>{filteredTemplates.length} of {getLicenseInfo()} templates available</span>
-        </div>
-      </div>
-
-      {user?.licenseType === 'basic' && (
-        <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <div className="flex items-center">
-            <Crown className="h-5 w-5 text-yellow-600 mr-2" />
-            <span className="font-medium text-yellow-800">Unlock 120 More Templates</span>
+  const LoginModal = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl p-8 max-w-md w-full transform transition-all">
+        <div className="text-center mb-6">
+          <div className="w-16 h-16 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Crown className="w-8 h-8 text-white" />
           </div>
-          <p className="text-yellow-700 text-sm mt-1">
-            Upgrade to Pro for 60+ premium templates and advanced features
-          </p>
-          <button 
-            onClick={() => setCurrentSection('pricing')}
-            className="mt-2 px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 text-sm"
-          >
-            Upgrade Now
-          </button>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">Welcome Back</h2>
+          <p className="text-gray-600">Sign in to Perfect Prompt Builder</p>
         </div>
-      )}
-
-      {/* Search and Filters */}
-      <div className="flex gap-4 mb-6">
-        <div className="flex-1 relative">
-          <Search className="h-5 w-5 absolute left-3 top-3 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search templates..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        
+        <div className="space-y-4 mb-6">
+          <input 
+            type="email" 
+            placeholder="Email address"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+          />
+          <input 
+            type="password" 
+            placeholder="Password"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
           />
         </div>
-        <select
-          value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
-          className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        
+        <button 
+          onClick={() => handleLogin('demo@user.com', 'password')}
+          className="w-full bg-gradient-to-r from-yellow-400 to-yellow-600 text-white py-3 rounded-lg font-semibold hover:from-yellow-500 hover:to-yellow-700 transition-all mb-4"
         >
-          {categories.map(category => (
-            <option key={category} value={category}>
-              {category.charAt(0).toUpperCase() + category.slice(1)}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* Templates Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredTemplates.map(template => (
-          <div key={template.id} className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <h3 className="font-semibold text-gray-900">{template.title}</h3>
-                <span className="text-xs text-gray-500 uppercase tracking-wide">{template.category}</span>
-              </div>
-              {template.isPremium && (
-                <Crown className="h-4 w-4 text-yellow-500" />
-              )}
-            </div>
-            
-            <p className="text-gray-600 text-sm mb-4">{template.description}</p>
-            
-            <button
-              onClick={() => handleUseTemplate(template)}
-              className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 text-sm font-medium"
-            >
-              Use Template
-            </button>
-          </div>
-        ))}
-      </div>
-
-      {/* Template Modal */}
-      {selectedTemplate && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[80vh] overflow-hidden">
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h2 className="text-xl font-semibold text-gray-900">{selectedTemplate.title}</h2>
-              <button onClick={closeTemplate} className="text-gray-400 hover:text-gray-600">
-                <X className="h-5 w-5" />
+          Sign In
+        </button>
+        
+        <div className="text-center text-sm text-gray-600 mb-4">
+          Don't have an account? <span className="text-yellow-600 cursor-pointer font-semibold">Sign up free</span>
+        </div>
+        
+        <div className="border-t pt-4">
+          <p className="text-center text-sm text-gray-600 mb-3">Try our demo tiers:</p>
+          <div className="space-y-2">
+            {['Starter', 'Professional', 'Enterprise'].map(tier => (
+              <button 
+                key={tier}
+                onClick={() => getDemoUser(tier)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm font-medium transition-all"
+              >
+                Demo {tier} Features
               </button>
-            </div>
-            
-            <div className="p-6 overflow-y-auto">
-              <p className="text-gray-600 mb-4">{selectedTemplate.description}</p>
-              
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Template Content</label>
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                  <pre className="whitespace-pre-wrap text-sm text-gray-800">{selectedTemplate.prompt}</pre>
-                </div>
-              </div>
-              
-              <div className="flex gap-3">
-                <button
-                  onClick={copyTemplate}
-                  className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 flex items-center justify-center"
-                >
-                  <Copy className="h-4 w-4 mr-2" />
-                  Copy Template
-                </button>
-                <button
-                  onClick={() => {
-                    setCurrentSection('prompt-builder');
-                    closeTemplate();
-                  }}
-                  className="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 flex items-center justify-center"
-                >
-                  <Edit3 className="h-4 w-4 mr-2" />
-                  Edit in Builder
-                </button>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
-      )}
-    </div>
-  );
-};
-
-// Pricing Component
-const Pricing = () => {
-  const { user } = useContext(AuthContext);
-  const { addNotification } = useContext(NotificationContext);
-
-  const plans = [
-    {
-      id: 'basic',
-      name: 'Basic',
-      price: 'Free',
-      icon: Zap,
-      color: 'gray',
-      features: [
-        '30 professional templates',
-        'Basic prompt builder',
-        'Community support',
-        'Standard generation speed'
-      ],
-      limitations: [
-        'Limited template access',
-        'No advanced features',
-        'No priority support'
-      ]
-    },
-    {
-      id: 'pro',
-      name: 'Pro',
-      price: '$29/month',
-      icon: Crown,
-      color: 'purple',
-      popular: true,
-      features: [
-        '150+ premium templates',
-        'Advanced prompt builder',
-        'Team collaboration',
-        'Priority generation',
-        'Analytics dashboard',
-        'Email support'
-      ],
-      limitations: [
-        'No API access',
-        'Limited customization'
-      ]
-    },
-    {
-      id: 'enterprise',
-      name: 'Enterprise',
-      price: '$99/month',
-      icon: Briefcase,
-      color: 'blue',
-      features: [
-        '500+ enterprise templates',
-        'Full API access',
-        'Advanced analytics',
-        'Custom integrations',
-        'Dedicated support',
-        'SSO authentication',
-        'Custom training'
-      ],
-      limitations: []
-    },
-    {
-      id: 'whitelabel',
-      name: 'White Label',
-      price: '$299/month',
-      icon: Star,
-      color: 'green',
-      features: [
-        'Everything in Enterprise',
-        'Complete white labeling',
-        'Custom branding',
-        'Reseller program',
-        'Revenue sharing',
-        'Dedicated account manager'
-      ],
-      limitations: []
-    }
-  ];
-
-  const handleUpgrade = (planId) => {
-    addNotification(`Upgrade to ${plans.find(p => p.id === planId)?.name} feature coming soon!`, 'info');
-  };
-
-  return (
-    <div className="p-8">
-      <div className="text-center mb-12">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">Choose Your Perfect Plan</h1>
-        <p className="text-gray-600 max-w-2xl mx-auto">
-          Unlock the full power of AI prompt engineering with our professional plans. 
-          Start free and scale as you grow.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
-        {plans.map(plan => {
-          const Icon = plan.icon;
-          const isCurrentPlan = user?.licenseType === plan.id;
-          
-          return (
-            <div
-              key={plan.id}
-              className={`relative bg-white rounded-2xl shadow-lg border-2 transition-transform hover:scale-105 ${
-                plan.popular ? 'border-purple-200 ring-4 ring-purple-50' : 'border-gray-200'
-              }`}
-            >
-              {plan.popular && (
-                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                  <span className="bg-purple-600 text-white px-4 py-1 rounded-full text-sm font-medium">
-                    Most Popular
-                  </span>
-                </div>
-              )}
-              
-              <div className="p-6">
-                <div className="text-center mb-6">
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 ${
-                    plan.color === 'purple' ? 'bg-purple-100' :
-                    plan.color === 'blue' ? 'bg-blue-100' :
-                    plan.color === 'green' ? 'bg-green-100' :
-                    'bg-gray-100'
-                  }`}>
-                    <Icon className={`h-6 w-6 ${
-                      plan.color === 'purple' ? 'text-purple-600' :
-                      plan.color === 'blue' ? 'text-blue-600' :
-                      plan.color === 'green' ? 'text-green-600' :
-                      'text-gray-600'
-                    }`} />
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900">{plan.name}</h3>
-                  <div className="text-3xl font-bold text-gray-900 mt-2">{plan.price}</div>
-                </div>
-
-                <div className="space-y-4 mb-6">
-                  <div>
-                    <h4 className="font-medium text-gray-900 mb-2">Includes:</h4>
-                    <ul className="space-y-2">
-                      {plan.features.map((feature, index) => (
-                        <li key={index} className="flex items-start">
-                          <Check className="h-4 w-4 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
-                          <span className="text-sm text-gray-600">{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  
-                  {plan.limitations.length > 0 && (
-                    <div>
-                      <h4 className="font-medium text-gray-900 mb-2">Limitations:</h4>
-                      <ul className="space-y-2">
-                        {plan.limitations.map((limitation, index) => (
-                          <li key={index} className="flex items-start">
-                            <X className="h-4 w-4 text-gray-400 mt-0.5 mr-2 flex-shrink-0" />
-                            <span className="text-sm text-gray-500">{limitation}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-
-                <button
-                  onClick={() => handleUpgrade(plan.id)}
-                  disabled={isCurrentPlan}
-                  className={`w-full py-3 px-4 rounded-lg font-medium transition-colors ${
-                    isCurrentPlan
-                      ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
-                      : plan.popular
-                      ? 'bg-purple-600 text-white hover:bg-purple-700'
-                      : 'bg-gray-900 text-white hover:bg-gray-800'
-                  }`}
-                >
-                  {isCurrentPlan ? 'Current Plan' : `Upgrade to ${plan.name}`}
-                </button>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="mt-16 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-8 text-center">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">Need a Custom Solution?</h2>
-        <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-          For large teams, custom integrations, or specific requirements, 
-          we offer tailored enterprise solutions with dedicated support.
-        </p>
+        
         <button 
-          onClick={() => addNotification('Contact sales feature coming soon!', 'info')}
-          className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 font-medium"
+          onClick={() => setShowLogin(false)}
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
         >
-          Contact Sales
+          <X className="w-6 h-6" />
         </button>
       </div>
     </div>
   );
-};
 
-// Analytics Component
-const Analytics = () => {
-  const { user } = useContext(AuthContext);
-  const { prompts } = useContext(AppStateContext);
-
-  const stats = [
-    { label: 'Prompts Created', value: user?.usage?.promptsCreated || 0, icon: Edit3, color: 'blue' },
-    { label: 'Templates Used', value: user?.usage?.templatesUsed || 0, icon: Library, color: 'purple' },
-    { label: 'API Calls', value: user?.usage?.apiCalls || 0, icon: Code, color: 'green' },
-    { label: 'Success Rate', value: '94%', icon: TrendingUp, color: 'yellow' }
-  ];
-
-  return (
-    <div className="p-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Analytics Dashboard</h1>
-        <p className="text-gray-600">Track your prompt performance and usage statistics</p>
+  const HomePage = () => (
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white">
+      <div className="fixed top-4 right-4 z-50 space-y-2">
+        {notifications.map(notification => (
+          <div 
+            key={notification.id}
+            className={`px-6 py-3 rounded-lg shadow-lg transform transition-all ${
+              notification.type === 'success' ? 'bg-green-500' :
+              notification.type === 'error' ? 'bg-red-500' : 'bg-blue-500'
+            }`}
+          >
+            {notification.message}
+          </div>
+        ))}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {stats.map((stat, index) => {
-          const Icon = stat.icon;
-          return (
-            <div key={index} className="bg-white rounded-lg p-6 border border-gray-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-500 text-sm">{stat.label}</p>
-                  <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+      <header className="container mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <div className="w-12 h-12 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-xl flex items-center justify-center">
+            <Crown className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold">Perfect Prompt Builder</h1>
+            <p className="text-sm text-gray-400">by Smart Press Media</p>
+          </div>
+        </div>
+        
+        <div className="flex items-center space-x-4">
+          <nav className="hidden md:flex space-x-6">
+            <a href="#features" className="hover:text-yellow-400 transition-colors">Features</a>
+            <a href="#templates" className="hover:text-yellow-400 transition-colors">Templates</a>
+            <a href="#pricing" className="hover:text-yellow-400 transition-colors">Pricing</a>
+          </nav>
+          <button 
+            onClick={() => setShowLogin(true)}
+            className="bg-gradient-to-r from-yellow-400 to-yellow-600 px-6 py-2 rounded-lg font-semibold hover:from-yellow-500 hover:to-yellow-700 transition-all"
+          >
+            Sign In
+          </button>
+        </div>
+      </header>
+
+      <section className="container mx-auto px-6 py-20 text-center">
+        <div className="max-w-4xl mx-auto">
+          <div className="mb-8">
+            <span className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-yellow-400/20 to-yellow-600/20 rounded-full text-yellow-400 text-sm font-semibold mb-6">
+              <Sparkles className="w-4 h-4 mr-2" />
+              AI-Powered Prompt Engineering Platform
+            </span>
+          </div>
+          
+          <h1 className="text-6xl font-bold mb-6 bg-gradient-to-r from-white via-yellow-400 to-white bg-clip-text text-transparent">
+            Create Perfect Prompts
+            <br />
+            <span className="text-yellow-400">Every Single Time</span>
+          </h1>
+          
+          <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+            Transform your AI interactions with our advanced prompt optimization engine. 
+            150+ professional templates, real-time AI assistance, and enterprise-grade analytics.
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
+            <button 
+              onClick={() => setShowLogin(true)}
+              className="bg-gradient-to-r from-yellow-400 to-yellow-600 px-8 py-4 rounded-xl font-bold text-lg hover:from-yellow-500 hover:to-yellow-700 transition-all transform hover:scale-105 shadow-lg"
+            >
+              Start Building Now
+            </button>
+            <button className="border-2 border-gray-600 px-8 py-4 rounded-xl font-bold text-lg hover:bg-gray-800 transition-all">
+              Watch Demo
+            </button>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+            <div className="bg-gray-800/50 p-6 rounded-xl border border-gray-700">
+              <Target className="w-12 h-12 text-yellow-400 mb-4 mx-auto" />
+              <h3 className="text-xl font-bold mb-2">150+ Templates</h3>
+              <p className="text-gray-400">Professional templates for every business category</p>
+            </div>
+            <div className="bg-gray-800/50 p-6 rounded-xl border border-gray-700">
+              <Brain className="w-12 h-12 text-yellow-400 mb-4 mx-auto" />
+              <h3 className="text-xl font-bold mb-2">AI Optimization</h3>
+              <p className="text-gray-400">Real-time prompt enhancement and performance analysis</p>
+            </div>
+            <div className="bg-gray-800/50 p-6 rounded-xl border border-gray-700">
+              <Trophy className="w-12 h-12 text-yellow-400 mb-4 mx-auto" />
+              <h3 className="text-xl font-bold mb-2">Enterprise Ready</h3>
+              <p className="text-gray-400">Team collaboration, custom branding, and API access</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="templates" className="container mx-auto px-6 py-16">
+        <div className="text-center mb-12">
+          <h2 className="text-4xl font-bold mb-4">Business Categories</h2>
+          <p className="text-xl text-gray-400">150+ professional templates across all industries</p>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+          {Object.entries(businessCategories).map(([category, data]) => {
+            const IconComponent = data.icon;
+            return (
+              <div key={category} className="bg-gray-800/50 p-6 rounded-xl border border-gray-700 hover:border-yellow-400/50 transition-all group cursor-pointer">
+                <div className="flex items-center mb-4">
+                  <div 
+                    className="w-12 h-12 rounded-lg flex items-center justify-center mr-4"
+                    style={{ backgroundColor: data.color + '20', color: data.color }}
+                  >
+                    <IconComponent className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-lg font-bold">{category}</h3>
                 </div>
-                <div className={`p-3 rounded-lg ${
-                  stat.color === 'blue' ? 'bg-blue-100' :
-                  stat.color === 'purple' ? 'bg-purple-100' :
-                  stat.color === 'green' ? 'bg-green-100' :
-                  'bg-yellow-100'
-                }`}>
-                  <Icon className={`h-6 w-6 ${
-                    stat.color === 'blue' ? 'text-blue-600' :
-                    stat.color === 'purple' ? 'text-purple-600' :
-                    stat.color === 'green' ? 'text-green-600' :
-                    'text-yellow-600'
-                  }`} />
+                <p className="text-gray-400 mb-4">{data.templates.length} professional templates</p>
+                <div className="flex flex-wrap gap-2">
+                  {data.templates.slice(0, 3).map(template => (
+                    <span key={template} className="px-3 py-1 bg-gray-700 rounded-full text-sm text-gray-300">
+                      {template}
+                    </span>
+                  ))}
+                  <span className="px-3 py-1 bg-yellow-400/20 text-yellow-400 rounded-full text-sm font-semibold">
+                    +{data.templates.length - 3} more
+                  </span>
                 </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      </section>
 
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Recent Activity</h2>
-        <div className="space-y-4">
-          {prompts.length > 0 ? (
-            prompts.slice(0, 5).map(prompt => (
-              <div key={prompt.id} className="flex items-center p-4 bg-gray-50 rounded-lg">
-                <Edit3 className="h-5 w-5 text-blue-600 mr-3" />
-                <div className="flex-1">
-                  <h3 className="font-medium text-gray-900">{prompt.title}</h3>
-                  <p className="text-sm text-gray-500">
-                    Created {new Date(prompt.createdAt).toLocaleDateString()}
-                  </p>
+      <section id="pricing" className="container mx-auto px-6 py-16">
+        <div className="text-center mb-12">
+          <h2 className="text-4xl font-bold mb-4">Choose Your Plan</h2>
+          <p className="text-xl text-gray-400">Start free, upgrade when you're ready to scale</p>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          {subscriptionTiers.map(tier => (
+            <div 
+              key={tier.name}
+              className={`relative p-8 rounded-2xl border-2 transition-all transform hover:scale-105 ${
+                tier.popular 
+                  ? 'border-yellow-400 bg-gradient-to-b from-yellow-400/10 to-transparent' 
+                  : 'border-gray-600 bg-gray-800/50'
+              }`}
+            >
+              {tier.popular && (
+                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-yellow-400 to-yellow-600 px-6 py-1 rounded-full text-sm font-bold">
+                  Most Popular
                 </div>
-                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                  {prompt.category}
-                </span>
-              </div>
-            ))
-          ) : (
-            <p className="text-gray-500 text-center py-8">No activity yet. Start building prompts to see analytics!</p>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Profile Component
-const Profile = () => {
-  const { user, logout } = useContext(AuthContext);
-  const { addNotification } = useContext(NotificationContext);
-
-  const handleLogout = () => {
-    logout();
-    addNotification('Logged out successfully!', 'success');
-  };
-
-  return (
-    <div className="p-8 max-w-2xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Profile Settings</h1>
-        <p className="text-gray-600">Manage your account and preferences</p>
-      </div>
-
-      <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Account Information</h2>
-        
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <div className="text-gray-900">{user?.email}</div>
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">License Type</label>
-            <div className="flex items-center">
-              <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                user?.licenseType === 'basic' ? 'bg-gray-100 text-gray-800' :
-                user?.licenseType === 'pro' ? 'bg-purple-100 text-purple-800' :
-                user?.licenseType === 'enterprise' ? 'bg-blue-100 text-blue-800' :
-                'bg-green-100 text-green-800'
-              }`}>
-                {user?.licenseType?.toUpperCase()}
-              </span>
-            </div>
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Member Since</label>
-            <div className="text-gray-900">
-              {user?.joinDate ? new Date(user.joinDate).toLocaleDateString() : 'Today'}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Account Actions</h2>
-        
-        <div className="space-y-3">
-          <button
-            onClick={() => addNotification('Password change feature coming soon!', 'info')}
-            className="w-full text-left p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            <div className="font-medium text-gray-900">Change Password</div>
-            <div className="text-sm text-gray-500">Update your account password</div>
-          </button>
-          
-          <button
-            onClick={() => addNotification('Export feature coming soon!', 'info')}
-            className="w-full text-left p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            <div className="font-medium text-gray-900">Export Data</div>
-            <div className="text-sm text-gray-500">Download your prompts and data</div>
-          </button>
-          
-          <button
-            onClick={handleLogout}
-            className="w-full text-left p-3 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
-          >
-            <div className="font-medium text-red-600">Sign Out</div>
-            <div className="text-sm text-red-500">Sign out of your account</div>
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Main Application Component
-const MainApp = () => {
-  const { currentSection } = useContext(AppStateContext);
-
-  const renderSection = () => {
-    switch (currentSection) {
-      case 'prompt-builder':
-        return <PromptBuilder />;
-      case 'templates':
-        return <Templates />;
-      case 'pricing':
-        return <Pricing />;
-      case 'analytics':
-      case 'advanced-analytics':
-        return <Analytics />;
-      case 'profile':
-        return <Profile />;
-      case 'api':
-        return (
-          <div className="p-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">API Documentation</h1>
-            <p className="text-gray-600">Enterprise API features coming soon...</p>
-          </div>
-        );
-      case 'branding':
-        return (
-          <div className="p-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">White Label Branding</h1>
-            <p className="text-gray-600">Customize the platform with your branding...</p>
-          </div>
-        );
-      default:
-        return <PromptBuilder />;
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-gray-50 flex">
-      <Sidebar />
-      <div className="flex-1 overflow-auto">
-        {renderSection()}
-      </div>
-    </div>
-  );
-};
-
-// Root Component
-const PerfectPromptBuilderComplete = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  
-  return (
-    <AuthProvider>
-      <NotificationProvider>
-        <AppStateProvider>
-          <div className="min-h-screen">
-            <AuthContext.Consumer>
-              {({ isAuthenticated, user }) => (
-                <>
-                  {!isAuthenticated ? <LoginForm /> : <MainApp />}
-                  <NotificationDisplay />
-                </>
               )}
-            </AuthContext.Consumer>
+              
+              <div className="text-center mb-6">
+                <h3 className="text-2xl font-bold mb-2">{tier.name}</h3>
+                <div className="text-4xl font-bold mb-2">
+                  {tier.price}
+                  <span className="text-lg text-gray-400 font-normal">/{tier.period.split(' ')[0]}</span>
+                </div>
+                <p className="text-gray-400">{tier.description}</p>
+              </div>
+              
+              <ul className="space-y-3 mb-8">
+                {tier.features.map(feature => (
+                  <li key={feature} className="flex items-center">
+                    <Check className="w-5 h-5 text-green-400 mr-3" />
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+              
+              <button 
+                onClick={() => getDemoUser(tier.name)}
+                className={`w-full py-3 rounded-lg font-semibold transition-all ${
+                  tier.popular
+                    ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-white hover:from-yellow-500 hover:to-yellow-700'
+                    : 'bg-gray-700 text-white hover:bg-gray-600'
+                }`}
+              >
+                {tier.buttonText}
+              </button>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <footer className="container mx-auto px-6 py-12 border-t border-gray-800">
+        <div className="text-center">
+          <div className="flex items-center justify-center space-x-3 mb-4">
+            <div className="w-8 h-8 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-lg flex items-center justify-center">
+              <Crown className="w-4 h-4 text-white" />
+            </div>
+            <span className="text-lg font-bold">Perfect Prompt Builder</span>
           </div>
-        </AppStateProvider>
-      </NotificationProvider>
-    </AuthProvider>
+          <p className="text-gray-400 mb-4">Powered by Smart Press Media</p>
+          <p className="text-sm text-gray-600">© 2025 Smart Press Media. All rights reserved.</p>
+        </div>
+      </footer>
+    </div>
   );
+
+  const Dashboard = () => (
+    <div className="min-h-screen" style={{ background: `linear-gradient(135deg, ${brandColors.dark} 0%, ${brandColors.charcoal} 50%, ${brandColors.dark} 100%)` }}>
+      <header className="border-b border-gray-800 bg-gray-900/50 backdrop-blur-sm sticky top-0 z-40">
+        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${brandColors.gold} 0%, #f9c74f 100%)` }}>
+              <Crown className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-white">Perfect Prompt Builder</h1>
+              <p className="text-sm" style={{ color: brandColors.gold }}>Professional Dashboard</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center space-x-4">
+            <div className="hidden md:flex items-center space-x-6">
+              <button 
+                onClick={() => setCurrentView('dashboard')}
+                className={`px-4 py-2 rounded-lg transition-all ${currentView === 'dashboard' ? 'bg-yellow-400/20 text-yellow-400' : 'text-gray-300 hover:text-white'}`}
+              >
+                Dashboard
+              </button>
+              <button 
+                onClick={() => setCurrentView('templates')}
+                className={`px-4 py-2 rounded-lg transition-all ${currentView === 'templates' ? 'bg-yellow-400/20 text-yellow-400' : 'text-gray-300 hover:text-white'}`}
+              >
+                Templates
+              </button>
+              <button 
+                onClick={() => setCurrentView('builder')}
+                className={`px-4 py-2 rounded-lg transition-all ${currentView === 'builder' ? 'bg-yellow-400/20 text-yellow-400' : 'text-gray-300 hover:text-white'}`}
+              >
+                AI Builder
+              </button>
+            </div>
+            
+            <div className="flex items-center space-x-3 pl-4 border-l border-gray-700">
+              <div className="text-right">
+                <p className="text-sm font-semibold text-white">{user?.plan || 'Professional'}</p>
+                <p className="text-xs text-gray-400">{user?.promptsUsed || 127}/{user?.promptsLimit || 'Unlimited'}</p>
+              </div>
+              <div className="w-8 h-8 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center">
+                <User className="w-4 h-4 text-white" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {currentView === 'dashboard' && (
+        <div className="container mx-auto px-6 py-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div className="bg-gray-800/50 p-6 rounded-xl border border-gray-700">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ background: `${brandColors.gold}20`, color: brandColors.gold }}>
+                  <Zap className="w-6 h-6" />
+                </div>
+                <span className="text-green-400 text-sm font-semibold">+23%</span>
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-1">2,847</h3>
+              <p className="text-gray-400">Prompts Created</p>
+            </div>
+            
+            <div className="bg-gray-800/50 p-6 rounded-xl border border-gray-700">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center text-blue-400">
+                  <Target className="w-6 h-6" />
+                </div>
+                <span className="text-green-400 text-sm font-semibold">+18%</span>
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-1">94.2%</h3>
+              <p className="text-gray-400">Success Rate</p>
+            </div>
+            
+            <div className="bg-gray-800/50 p-6 rounded-xl border border-gray-700">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center text-purple-400">
+                  <Clock className="w-6 h-6" />
+                </div>
+                <span className="text-green-400 text-sm font-semibold">-34%</span>
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-1">2.3s</h3>
+              <p className="text-gray-400">Avg Response Time</p>
+            </div>
+            
+            <div className="bg-gray-800/50 p-6 rounded-xl border border-gray-700">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center text-green-400">
+                  <TrendingUp className="w-6 h-6" />
+                </div>
+                <span className="text-green-400 text-sm font-semibold">+67%</span>
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-1">$12.4K</h3>
+              <p className="text-gray-400">Value Generated</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="bg-gray-800/50 p-6 rounded-xl border border-gray-700">
+              <h3 className="text-xl font-bold text-white mb-4 flex items-center">
+                <Rocket className="w-5 h-5 mr-2" style={{ color: brandColors.gold }} />
+                Quick Start
+              </h3>
+              <div className="space-y-3">
+                <button 
+                  onClick={() => setCurrentView('builder')}
+                  className="w-full p-4 bg-gradient-to-r from-yellow-400/20 to-yellow-600/20 rounded-lg border border-yellow-400/30 text-left hover:from-yellow-400/30 hover:to-yellow-600/30 transition-all group"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-semibold text-white">Create New Prompt</h4>
+                      <p className="text-sm text-gray-400">Start with AI assistance</p>
+                    </div>
+                    <ArrowRight className="w-5 h-5 text-yellow-400 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </button>
+                
+                <button 
+                  onClick={() => setCurrentView('templates')}
+                  className="w-full p-4 bg-gray-700/50 rounded-lg text-left hover:bg-gray-700 transition-all group"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-semibold text-white">Browse Templates</h4>
+                      <p className="text-sm text-gray-400">150+ professional templates</p>
+                    </div>
+                    <ArrowRight className="w-5 h-5 text-gray-400 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <div className="bg-gray-800/50 p-6 rounded-xl border border-gray-700">
+              <h3 className="text-xl font-bold text-white mb-4 flex items-center">
+                <Heart className="w-5 h-5 mr-2 text-red-400" />
+                Recent Prompts
+              </h3>
+              <div className="space-y-3">
+                {savedPrompts.map(prompt => (
+                  <div key={prompt.id} className="p-3 bg-gray-700/50 rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-semibold text-white text-sm">{prompt.title}</h4>
+                      <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: `${brandColors.gold}20`, color: brandColors.gold }}>
+                        {prompt.performance}%
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-400">{prompt.category}</span>
+                      <span className="text-xs text-gray-500">{prompt.lastUsed}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {currentView === 'templates' && (
+        <div className="container mx-auto px-6 py-8">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-3xl font-bold text-white">Template Library</h2>
+            <div className="flex items-center space-x-4">
+              <div className="relative">
+                <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+                <input 
+                  type="text"
+                  placeholder="Search templates..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 pr-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <div className="lg:col-span-1">
+              <h3 className="text-lg font-bold text-white mb-4">Categories</h3>
+              <div className="space-y-2">
+                {Object.entries(businessCategories).map(([category, data]) => {
+                  const IconComponent = data.icon;
+                  return (
+                    <button 
+                      key={category}
+                      onClick={() => setSelectedCategory(category)}
+                      className={`w-full p-3 rounded-lg text-left transition-all flex items-center ${
+                        selectedCategory === category 
+                          ? 'bg-yellow-400/20 border-yellow-400/30 border' 
+                          : 'bg-gray-800/50 hover:bg-gray-700/50'
+                      }`}
+                    >
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center mr-3 ${
+                        selectedCategory === category ? 'text-yellow-400' : ''
+                      }`} style={{ backgroundColor: data.color + '20', color: selectedCategory === category ? brandColors.gold : data.color }}>
+                        <IconComponent className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-white text-sm">{category}</p>
+                        <p className="text-xs text-gray-400">{data.templates.length} templates</p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="lg:col-span-3">
+              {selectedCategory ? (
+                <div>
+                  <h3 className="text-xl font-bold text-white mb-6">{selectedCategory} Templates</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {businessCategories[selectedCategory].templates.map(template => (
+                      <div 
+                        key={template}
+                        className="bg-gray-800/50 p-4 rounded-lg border border-gray-700 hover:border-yellow-400/50 transition-all cursor-pointer group"
+                        onClick={() => {
+                          setSelectedTemplate(template);
+                          setCurrentView('builder');
+                          addNotification(`Loading ${template} template...`, 'info');
+                        }}
+                      >
+                        <h4 className="font-semibold text-white mb-2 group-hover:text-yellow-400 transition-colors">{template}</h4>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <Star className="w-4 h-4 text-yellow-400" />
+                            <span className="text-sm text-gray-400">4.{Math.floor(Math.random() * 4) + 6}/5</span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <span className="text-xs px-2 py-1 rounded-full bg-green-500/20 text-green-400">Pro</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-20">
+                  <Target className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                  <h3 className="text-xl font-bold text-white mb-2">Select a Category</h3>
+                  <p className="text-gray-400">Choose a business category to explore our professional templates</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {currentView === 'builder' && (
+        <div className="container mx-auto px-6 py-8">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold text-white mb-4">AI Prompt Builder</h2>
+              <p className="text-gray-400">Create and optimize prompts with advanced AI assistance</p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="bg-gray-800/50 p-6 rounded-xl border border-gray-700">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-bold text-white flex items-center">
+                    <Edit className="w-5 h-5 mr-2" style={{ color: brandColors.gold }} />
+                    Your Prompt
+                  </h3>
+                  {selectedTemplate && (
+                    <span className="text-sm px-3 py-1 rounded-full" style={{ backgroundColor: `${brandColors.gold}20`, color: brandColors.gold }}>
+                      {selectedTemplate}
+                    </span>
+                  )}
+                </div>
+                
+                <textarea 
+                  value={userPrompt}
+                  onChange={(e) => setUserPrompt(e.target.value)}
+                  placeholder="Enter your prompt here, or select a template to get started..."
+                  className="w-full h-64 p-4 bg-gray-900/50 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-yellow-400 focus:border-transparent resize-none"
+                />
+                
+                <div className="flex items-center justify-between mt-4">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm text-gray-400">{userPrompt.length} characters</span>
+                    <div className="w-2 h-2 rounded-full bg-green-400"></div>
+                    <span className="text-sm text-green-400">Optimal length</span>
+                  </div>
+                  
+                  <button 
+                    onClick={handleOptimizePrompt}
+                    disabled={!userPrompt.trim() || isOptimizing}
+                    className="bg-gradient-to-r from-yellow-400 to-yellow-600 px-6 py-2 rounded-lg font-semibold text-white hover:from-yellow-500 hover:to-yellow-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                  >
+                    {isOptimizing ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                        Optimizing...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-4 h-4 mr-2" />
+                        Optimize with AI
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              <div className="bg-gray-800/50 p-6 rounded-xl border border-gray-700">
+                <h3 className="text-xl font-bold text-white mb-4 flex items-center">
+                  <Brain className="w-5 h-5 mr-2 text-purple-400" />
+                  AI Optimized Result
+                </h3>
+                
+                {optimizedPrompt ? (
+                  <div className="space-y-4">
+                    <div className="p-4 bg-gray-900/50 rounded-lg border border-gray-600">
+                      <pre className="text-gray-300 text-sm whitespace-pre-wrap font-mono">
+                        {optimizedPrompt}
+                      </pre>
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-4">
+                        <button className="flex items-center space-x-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-all">
+                          <Copy className="w-4 h-4" />
+                          <span>Copy</span>
+                        </button>
+                        <button className="flex items-center space-x-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-all">
+                          <Bookmark className="w-4 h-4" />
+                          <span>Save</span>
+                        </button>
+                        <button className="flex items-center space-x-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-all">
+                          <Share2 className="w-4 h-4" />
+                          <span>Share</span>
+                        </button>
+                      </div>
+                      
+                      <div className="flex items-center space-x-2">
+                        <div className="flex items-center">
+                          {[...Array(5)].map((_, i) => (
+                            <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
+                          ))}
+                        </div>
+                        <span className="text-sm font-semibold" style={{ color: brandColors.gold }}>
+                          96% Performance
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-20">
+                    <Brain className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                    <h4 className="text-lg font-semibold text-white mb-2">AI Ready to Optimize</h4>
+                    <p className="text-gray-400">Enter a prompt and click "Optimize with AI" to see the magic happen</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="mt-8 bg-gray-800/50 p-6 rounded-xl border border-gray-700">
+              <h3 className="text-xl font-bold text-white mb-4 flex items-center">
+                <Lightbulb className="w-5 h-5 mr-2 text-blue-400" />
+                AI Insights & Suggestions
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="p-4 bg-blue-500/10 rounded-lg border border-blue-500/20">
+                  <h4 className="font-semibold text-blue-400 mb-2">Clarity Score</h4>
+                  <div className="text-2xl font-bold text-white">8.7/10</div>
+                  <p className="text-xs text-gray-400 mt-1">Very clear instructions</p>
+                </div>
+                
+                <div className="p-4 bg-green-500/10 rounded-lg border border-green-500/20">
+                  <h4 className="font-semibold text-green-400 mb-2">Specificity</h4>
+                  <div className="text-2xl font-bold text-white">9.2/10</div>
+                  <p className="text-xs text-gray-400 mt-1">Highly specific</p>
+                </div>
+                
+                <div className="p-4 bg-purple-500/10 rounded-lg border border-purple-500/20">
+                  <h4 className="font-semibold text-purple-400 mb-2">AI Compatibility</h4>
+                  <div className="text-2xl font-bold text-white">9.6/10</div>
+                  <p className="text-xs text-gray-400 mt-1">Excellent format</p>
+                </div>
+              </div>
+              
+              <div className="mt-6">
+                <h4 className="font-semibold text-white mb-3">Suggested Improvements:</h4>
+                <div className="space-y-2">
+                  <div className="flex items-start space-x-3 p-3 bg-yellow-400/10 rounded-lg border border-yellow-400/20">
+                    <div className="w-2 h-2 rounded-full mt-2" style={{ backgroundColor: brandColors.gold }}></div>
+                    <p className="text-sm text-gray-300">Add specific output format requirements for better structure</p>
+                  </div>
+                  <div className="flex items-start space-x-3 p-3 bg-blue-500/10 rounded-lg border border-blue-500/20">
+                    <div className="w-2 h-2 bg-blue-400 rounded-full mt-2"></div>
+                    <p className="text-sm text-gray-300">Include examples to guide AI behavior more effectively</p>
+                  </div>
+                  <div className="flex items-start space-x-3 p-3 bg-green-500/10 rounded-lg border border-green-500/20">
+                    <div className="w-2 h-2 bg-green-400 rounded-full mt-2"></div>
+                    <p className="text-sm text-gray-300">Consider adding context about target audience</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  if (!isLoggedIn) {
+    return (
+      <div>
+        <HomePage />
+        {showLogin && <LoginModal />}
+      </div>
+    );
+  }
+
+  return <Dashboard />;
 };
 
-export default PerfectPromptBuilderComplete;
+export default PerfectPromptBuilder; 
