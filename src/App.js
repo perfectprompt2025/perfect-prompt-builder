@@ -7,8 +7,7 @@ import {
   Lightbulb, Rocket, Globe, Lock, Unlock, Play,
   ArrowRight, Plus, Edit, Trash2, Eye, Code,
   MessageSquare, FileText, Image, Video, Music,
-  ShoppingBag, Calendar, Clock, DollarSign,
-  GitCommit
+  ShoppingBag, Calendar, Clock, DollarSign
 } from 'lucide-react';
 
 // Smart Press Media Brand Colors
@@ -172,8 +171,8 @@ const PerfectPromptBuilder = () => {
     await new Promise(resolve => setTimeout(resolve, 2000 + Math.random() * 1000));
     
     const optimizations = [
-      `Refined Version: ${userPrompt}\n\nKey Improvements:\n• Enhanced clarity and specificity\n• Added context frameworks\n• Optimized for better AI responses\n• Included performance metrics\n• Added output format specifications`,
-      `Enhanced Prompt:\n\n${userPrompt}\n\nAI Optimizations Applied:\n✓ Contextual framing added\n✓ Output format clarified\n✓ Specificity enhanced\n✓ Edge cases addressed\n✓ Performance keywords included\n\nExpected Performance Boost: +34%`,
+      `Refined Version: ${userPrompt}\n\nKey Improvements:\nâ€¢ Enhanced clarity and specificity\nâ€¢ Added context frameworks\nâ€¢ Optimized for better AI responses\nâ€¢ Included performance metrics\nâ€¢ Added output format specifications`,
+      `Enhanced Prompt:\n\n${userPrompt}\n\nAI Optimizations Applied:\nâœ“ Contextual framing added\nâœ“ Output format clarified\nâœ“ Specificity enhanced\nâœ“ Edge cases addressed\nâœ“ Performance keywords included\n\nExpected Performance Boost: +34%`,
       `Professional Optimization:\n\n"${userPrompt}"\n\nBecomes:\n\n[Enhanced professional version with specific parameters, clear objectives, detailed context, and optimized structure for maximum AI performance]\n\nConfidence Score: 96%`
     ];
     
@@ -477,7 +476,7 @@ const PerfectPromptBuilder = () => {
             <span className="text-lg font-bold">Perfect Prompt Builder</span>
           </div>
           <p className="text-gray-400 mb-4">Powered by Smart Press Media</p>
-          <p className="text-sm text-gray-600">© 2025 Smart Press Media. All rights reserved.</p>
+          <p className="text-sm text-gray-600">Â© 2025 Smart Press Media. All rights reserved.</p>
         </div>
       </footer>
     </div>
@@ -901,4 +900,4 @@ const PerfectPromptBuilder = () => {
   return <Dashboard />;
 };
 
-export default PerfectPromptBuilder; 
+export default PerfectPromptBuilder;
